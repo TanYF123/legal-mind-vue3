@@ -1,7 +1,7 @@
 <script setup>
 import {useRouter} from "vue-router";
 import Search from "./view/Search.vue";
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 import Dialog from "./view/Dialog.vue";
 
 const router = useRouter()
@@ -21,26 +21,26 @@ const goHome = ()=>{
     router.push({path:'/index'})
 }
 
+onMounted(()=>{
+    top_search.value = true
+})
+
 </script>
 
 <template>
     <div style="width: 100%;height: 100%">
         <div class="navbar bg-base-100">
             <div :class="top_search?'flex-1':'flex-none'">
-                <a class="btn btn-ghost normal-case text-xl" @click="goHome">法律法规检索</a>
+                <a class="btn btn-ghost normal-case text-xl" style="float: left" @click="goHome">法律法规检索</a>
             </div>
             <div class="flex-1" :hidden="top_search">
                 <input type="text" v-model="search_word" class="input input-bordered w-full max-w-xl"/>
                 <button class="btn btn-primary ml-3.5">查询</button>
             </div>
-            <div class="flex-none gap-x-2.5">
+            <div class="flex-none">
                 <div class="navbar-end">
                     <a class="btn btn-outline btn-primary">联系</a>
-                </div>
-                <div class="navbar-end">
                     <a class="btn btn-outline btn-primary">注册</a>
-                </div>
-                <div class="navbar-end">
                     <a class="btn btn-outline btn-primary">登录</a>
                 </div>
             </div>
@@ -56,8 +56,20 @@ ul li{
 .navbar{
     position: fixed;
     top: 0;
+    z-index: 999;
 }
 .flex-none{
-    margin-right: 3rem;
+   min-width: 10rem;
+}
+.btn-x-w{
+    min-width: 25rem;
+}
+.navbar-end{
+    float: right;
+    min-width: 25rem;
+}
+.navbar-end a{
+    width: 4rem;
+    margin-right: 0.5rem;
 }
 </style>

@@ -1,4 +1,7 @@
 <script setup>
+import {onMounted} from "vue";
+
+const emits = defineEmits(['hidden'])
 
 </script>
 
