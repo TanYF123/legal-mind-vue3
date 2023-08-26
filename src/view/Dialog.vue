@@ -14,17 +14,19 @@ const goHome = () =>{
 </script>
 
 <template>
-    <div class="navbar-header">
-        <a class="btn btn-ghost normal-case text-xl" style="color: #570DF8" @click="goHome">法律法规检索</a>
-        <div style="width: 40%;position: relative">
-            <i class="input-icon-header-prefix"></i>
-            <input type="text" placeholder="请输入想要查询的法规" class="input input-bordered input-primary w-full"/>
-            <i class="input-icon-header-suffix"></i>
-        </div>
-        <div class="navbar-header-btn">
-            <a class="btn btn-outline btn-primary">联系</a>
-            <a class="btn btn-outline btn-primary">注册</a>
-            <a class="btn btn-outline btn-primary">登录</a>
+    <div class="navbar-header-parent">
+        <div class="navbar-header">
+            <a class="btn btn-ghost normal-case text-xl" style="color: #570DF8" @click="goHome">法律法规检索</a>
+            <div style="width: 40%;position: relative">
+                <i class="input-icon-header-prefix"></i>
+                <input type="text" placeholder="请输入想要查询的法规" class="input input-bordered input-primary w-full"/>
+                <i class="input-icon-header-suffix"></i>
+            </div>
+            <div class="navbar-header-btn">
+                <a class="btn btn-outline btn-primary">联系</a>
+                <a class="btn btn-outline btn-primary">注册</a>
+                <a class="btn btn-outline btn-primary">登录</a>
+            </div>
         </div>
     </div>
     <div class="dialog-content">
@@ -88,17 +90,24 @@ const goHome = () =>{
 </template>
 
 <style scoped>
-.navbar-header{
-    width:100%;
-    height: 5rem;
+.navbar-header-parent{
+    width: 100%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    border-bottom:1px solid #DCDCDC;
+    justify-content: center;
+    text-align: center;
     position: fixed;
     top: 0;
     z-index: 999;
     background-color: white;
+    border-bottom:1px solid #DCDCDC;
+}
+.navbar-header{
+    width:80%;
+    height: 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 .navbar-header input{
     padding-left: 3rem;
