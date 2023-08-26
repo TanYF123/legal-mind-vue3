@@ -101,6 +101,7 @@ const goHome = () =>{
     z-index: 999;
     background-color: white;
     border-bottom:1px solid #DCDCDC;
+    box-shadow: 10px 5px 5px #DCDCDC;
 }
 .navbar-header{
     width:80%;

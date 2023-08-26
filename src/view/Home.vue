@@ -108,7 +108,7 @@ onMounted(()=>{
         <div class="home-search">
             <div style="width: 45%;position: relative">
                 <i class="input-icon-prefix"></i>
-                <input type="text" placeholder="请输入想要查询的法规" class="input input-bordered input-primary w-full" v-model="search_word"/>
+                <input type="text" placeholder="请输入想要查询的法规" class="input input-bordered input-primary w-full" v-model="search_word" @keyup.enter.down="do_search"/>
                 <i @click="do_search" class="input-icon-suffix"></i>
             </div>
         </div>
@@ -135,7 +135,7 @@ onMounted(()=>{
 
 <style scoped>
 .navbar-header-parent{
-    height: 4rem;
+    height: 5rem;
     width: 100%;
     display: flex;
     align-items: center;
@@ -229,7 +229,7 @@ onMounted(()=>{
 }
 
 .login-model{
-    height: 35%;
+    height: 40%;
     width: 80%;
 }
 .err-msg-index{
