@@ -1,6 +1,7 @@
 <script setup>
 import {useRouter} from "vue-router";
 import {onMounted, ref} from "vue";
+import axios from "axios";
 
 const router = useRouter()
 const search_word = ref('')
@@ -10,6 +11,13 @@ const user_name = ref('')
 const pass_word = ref('')
 const err_msg = ref(true)
 const logged = ref(true)
+const drop_down = ref(true)
+const drop_down_value = ref([])
+const hotSearch = [
+    '中华人民共和国刑法（2015）第六十七条',
+    '中华人民共和国道路交通安全法（2011）第七十六条',
+    '中华人民共和国民法典第六十三条'
+]
 
 const sign_in = ()=>{
   if(user_name.value==='admin'&&pass_word.value==='admin'){
@@ -29,13 +37,9 @@ const sign_out=()=>{
     pass_word.value = ''
 }
 
-const goHome = ()=>{
-    router.push({path:'/'})
-}
-
 const do_search=()=>{
     if(search_word.value.length > 0){
-        router.push({path:'/dialog'})
+        router.push({path:'/dialog',query:{question:search_word.value}})
     }
 }
 
@@ -46,6 +50,37 @@ const hidden_tab=(val)=>{
     }
 }
 
+const hidden_search_drop_down = ()=>{
+    if(!drop_down.value){
+        drop_down.value = true
+    }
+}
+
+const associate_law = ()=>{
+    if(search_word.value === ''){
+        drop_down_value.value = []
+        drop_down.value = true
+        return
+    }
+    let uri = 'http://127.0.0.1:8080/associate'
+    let data = {"word":search_word.value}
+    axios.post(uri,data,{headers:{'Content-Type':'application/json'}}).then((res)=>{
+        let data = res.data;
+        if(data.status_code === 200){
+            if(data.data.associateLaw.length>0){
+                drop_down_value.value = data.data.associateLaw
+            }
+            drop_down.value = false
+        }
+    })
+}
+
+const recommend_click = (val)=>{
+    search_word.value = val
+    drop_down.value = true
+    do_search()
+}
+
 onMounted(()=>{
 
 })
@@ -53,7 +88,7 @@ onMounted(()=>{
 </script>
 
 <template>
-    <div id="home" style="height: 100%;width: 100%">
+    <div id="home" style="height: 100%;width: 100%" @click="hidden_search_drop_down">
         <div>
             <dialog id="login_modal" class="modal">
                 <form class="modal-box login-model">
@@ -108,8 +143,17 @@ onMounted(()=>{
         <div class="home-search">
             <div style="width: 45%;position: relative">
                 <i class="input-icon-prefix"></i>
-                <input type="text" placeholder="请输入想要查询的法规" class="input input-bordered input-primary w-full" v-model="search_word" @keyup.enter.down="do_search"/>
+                <input type="text" placeholder="请输入想要查询的法规" class="input input-bordered input-primary w-full" v-on:input="associate_law" v-model="search_word" @keyup.enter.down="do_search"/>
                 <i @click="do_search" class="input-icon-suffix"></i>
+            </div>
+            <div id="search-drop-down" class="search-drop-down" :hidden="drop_down">
+                <ul style="text-align: left;margin-top: 1rem;">
+                    <li @click="recommend_click(item)" style="width: 100%" v-for='item in drop_down_value'>
+                        <button class="btn btn-outline w-full" style="justify-content: flex-start;border: none;font-size: 1.1rem;padding-left: 2rem;font-weight:normal">
+                                {{item}}
+                        </button>
+                    </li>
+                </ul>
             </div>
         </div>
         <div class="home-recommend">
@@ -120,9 +164,9 @@ onMounted(()=>{
                 </div>
                 <div style="width: 90%;height: 100%" :hidden="recommend">
                     <ul class="ul-grp">
-                        <li><a class="link link-info">中华人民共和国刑法（2015）第六十七条</a></li>
-                        <li><a class="link link-info">中华人民共和国道路交通安全法（2011）第七十六条</a></li>
-                        <li><a class="link link-info">最高人民法院关于适用《中华人民共和国民法典》时间效力的若干规定</a></li>
+                        <li v-for="item in hotSearch">
+                            <a @click='recommend_click(item)' class="link link-info">{{item}}</a>
+                        </li>
                     </ul>
                 </div>
                 <div  style="width: 90%;height: 100%;" :hidden="history">
@@ -237,5 +281,21 @@ onMounted(()=>{
     top: 0;
     z-index: 999;
     width: 90%;
+}
+.search-drop-down{
+    width: 45%;
+    height:30%;
+    position: absolute;
+    z-index: 999;
+    top:35%;
+    background-color: white;
+    box-shadow: 0 0.5rem 0.5rem #DCDCDC;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    border-bottom-left-radius: 2rem;
+    border-bottom-right-radius: 2rem;
+}
+.huise{
+    background-color: #DCDCDC;
 }
 </style>

@@ -1,8 +1,14 @@
 <script setup>
-import {useRouter} from "vue-router";
+import {useRouter,useRoute } from "vue-router";
 import {onMounted, ref} from "vue";
+import axios from "axios";
 
 const router = useRouter()
+const route = useRoute()
+const search_word = ref(route.query.question)
+const loading = ref(false)
+const result = ref([])
+const follow_up = ref('')
 
 const emits = defineEmits(['hidden'])
 const thumbs_up = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" style="margin-bottom: 0.5rem" viewBox="0 0 512 512"><path d="M320 458.16S304 464 256 464s-74-16-96-32H96a64 64 0 01-64-64v-48a64 64 0 0164-64h30a32.34 32.34 0 0027.37-15.4S162 221.81 188 176.78 264 64 272 48c29 0 43 22 34 47.71-10.28 29.39-23.71 54.38-27.46 87.09-.54 4.78 3.14 12 7.95 12L416 205" fill="none" stroke="#0081CF" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/><path d="M416 271l-80-2c-20-1.84-32-12.4-32-30h0c0-17.6 14-28.84 32-30l80-4c17.6 0 32 16.4 32 34v.17A32 32 0 01416 271zM448 336l-112-2c-18-.84-32-12.41-32-30h0c0-17.61 14-28.86 32-30l112-2a32.1 32.1 0 0132 32h0a32.1 32.1 0 01-32 32zM400 464l-64-3c-21-1.84-32-11.4-32-29h0c0-17.6 14.4-30 32-30l64-2a32.09 32.09 0 0132 32h0a32.09 32.09 0 01-32 32zM432 400l-96-2c-19-.84-32-12.4-32-30h0c0-17.6 13-28.84 32-30l96-2a32.09 32.09 0 0132 32h0a32.09 32.09 0 01-32 32z" fill="none" stroke="#0081CF" stroke-miterlimit="10" stroke-width="32"/></svg>'
@@ -11,6 +17,58 @@ const thumbs_down = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="
 const goHome = () =>{
     router.push({path:'/'})
 }
+
+const get_answer = ()=>{
+    if(search_word.value === ''){
+        return
+    }
+    loading.value = false
+    setTimeout(()=>{
+        let uri = 'http://127.0.0.1:8080/getAnswer'
+        let data = {"word":search_word.value}
+        axios.post(uri,data,{headers:{'Content-Type':'application/json'}}).then((res)=>{
+            let data = res.data;
+            if(data.status_code === 200){
+                result.value = []
+                result.value.push(data.data)
+            }
+        })
+        loading.value = true
+    },1000)
+}
+
+const loop_get_answer = (val)=>{
+    if(search_word.value === ''){
+        return
+    }
+    loading.value = false
+    setTimeout(()=>{
+        let uri = 'http://127.0.0.1:8080/getAnswer'
+        let data = {"word":val}
+        axios.post(uri,data,{headers:{'Content-Type':'application/json'}}).then((res)=>{
+            let data = res.data;
+            if(data.status_code === 200){
+                document.getElementById('recommend').remove();
+                data.data.question = val
+                result.value.push(data.data)
+            }
+        })
+        loading.value = true
+    },1000)
+}
+
+const follow_up_question = ()=>{
+    loop_get_answer(follow_up.value)
+}
+
+onMounted(()=>{
+    get_answer()
+})
+
+
+
+
+
 </script>
 
 <template>
@@ -19,8 +77,8 @@ const goHome = () =>{
             <a class="btn btn-ghost normal-case text-xl" style="color: #570DF8" @click="goHome">法律法规检索</a>
             <div style="width: 40%;position: relative">
                 <i class="input-icon-header-prefix"></i>
-                <input type="text" placeholder="请输入想要查询的法规" class="input input-bordered input-primary w-full"/>
-                <i class="input-icon-header-suffix"></i>
+                <input type="text" placeholder="请输入想要查询的法规" class="input input-bordered input-primary w-full" v-model="search_word"/>
+                <i @click="get_answer" class="input-icon-header-suffix"></i>
             </div>
             <div class="navbar-header-btn">
                 <a class="btn btn-outline btn-primary">联系</a>
@@ -30,61 +88,46 @@ const goHome = () =>{
         </div>
     </div>
     <div class="dialog-content">
-        <div style="width: 50%">
-            <div style="display: flex;justify-content: flex-start;max-width: 30rem">
-                <div style="margin-top:2rem">
-                    <i v-html="thumbs_up" style="cursor:pointer;"></i>
-                    <i v-html="thumbs_down" style="cursor:pointer;"></i>
+        <div id="dialog_session" style="width: 50%">
+            <div style="width: 100%" v-for="item in result">
+                <div v-if="item.question">
+                    <div class="chat chat-end">
+                        <div class="chat-bubble chat-bubble-success mt-1">{{item.question}}</div>
+                    </div>
                 </div>
-                <div class="chat chat-start">
-                    <div class="chat-bubble">
-                        <p align="left">
-                            第七十六条<br>
-                            机动车发生交通事故造成人身伤亡、财产损失的，由保险公司在机动车第三者责任强制保险责任限额范围内予以赔偿；不足的部分，按照下列规定承担赔偿责任：<br>
-                            （一） 机动车之间发生交通事故的，由有过错的一方承担赔偿责任；双方都有过错的，按照各自过错的比例分担责任。<br>
-                            （二） 机动车与非机动车驾驶人、行人之间发生交通事故，非机动车驾驶人、行人没有过错的，由机动车一方承担赔偿责任；有证据证明非机动车驾驶人、行人有过错的，根据过错程度适当减轻机动车一方的赔偿责任；机动车一方没有过错的，承担不超过百分之十的赔偿责任。<br>
-                            交通事故的损失是由非机动车驾驶人、行人故意碰撞机动车造成的，机动车一方不承担赔偿责任
-                        </p>
+                <div style="display: flex;justify-content: flex-start;max-width: 30rem">
+                    <div style="margin-top:2rem">
+                        <i v-html="thumbs_up" style="cursor:pointer;"></i>
+                        <i v-html="thumbs_down" style="cursor:pointer;"></i>
+                    </div>
+                    <div class="chat chat-start">
+                        <div class="chat-bubble">
+                            <p align="left">
+                                {{item.highAnswer}}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div id="recommend">
+                    <div class="chat chat-end">
+                        <span>
+                            <label>建议问题</label>
+                        </span>
+                        <div class="chat-bubble mt-1" v-for="item1 in item.relatedAnswers" v-on:click="loop_get_answer(item1)"><a class="link link-info">{{item1}}</a></div>
                     </div>
                 </div>
             </div>
-            <div>
-                <div class="chat chat-end">
-                    <div class="chat-bubble chat-bubble-success mt-1">中华人民共和国道路交通安全法（2011）第八十条</div>
-                </div>
-            </div>
-            <div style="display: flex;justify-content: flex-start;max-width: 30rem">
-                <div style="margin-top:2rem">
-                    <i v-html="thumbs_up" style="cursor:pointer;"></i>
-                    <i v-html="thumbs_down" style="cursor:pointer;"></i>
-                </div>
-                <div class="chat chat-start">
-                    <div class="chat-bubble">
-                        <p align="left">
-                            公安机关交通管理部门依法实施罚款的行政处罚，应当依照有关法律、行政法规的规定，实施罚款决定与罚款收缴分离；收缴的罚款以及依法没收的违法所得，应当全部上缴国库。
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div>
-                <div class="chat chat-end">
-                <span>
-                    <label>建议问题</label>
-                </span>
-                    <div class="chat-bubble mt-1"><a class="link link-info">中华人民共和国道路交通安全法（2011）第七十七条</a></div>
-                    <div class="chat-bubble mt-1"><a class="link link-info">中华人民共和国道路交通安全法（2011）第七十八条</a></div>
-                </div>
-            </div>
+        </div>
+        <div :hidden="loading" style="width: 50%">
             <div class="chat chat-start">
-                <span class="loading loading-ring loading-lg text-info"></span>
+                <span class="loading loading-ring loading-lg text-primary"></span>
             </div>
-
         </div>
     </div>
     <div class="navbar-foot">
         <div style="width: 50%;position: relative">
-            <input type="text" placeholder="提出后续问题" class="input input-bordered  w-full"/>
-            <i @click="do_search" class="input-icon-suffix"></i>
+            <input type="text" placeholder="提出后续问题" class="input input-bordered  w-full" v-model="follow_up"/>
+            <i @click="follow_up_question" class="input-icon-suffix"></i>
         </div>
     </div>
 </template>
@@ -171,8 +214,9 @@ const goHome = () =>{
 }
 .dialog-content{
     display: flex;
-    align-items: start;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
     text-align: center;
     height: 80%;
     padding-top: 5.5rem;

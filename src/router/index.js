@@ -6,6 +6,7 @@ const routes = [
     },
     {
         path:'/dialog',
+        name:'dialog',
         component:()=>import('../view/Dialog.vue')
     }
 ]
